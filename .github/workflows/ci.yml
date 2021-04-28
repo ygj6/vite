@@ -8,7 +8,7 @@ env:
 on:
   push:
     branches:
-      - main
+      - issue-3162-test
   pull_request:
 
 jobs:
