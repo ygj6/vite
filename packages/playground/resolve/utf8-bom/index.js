@@ -1,5 +1,5 @@
 ﻿/**
  * This is a UTF-8-BOM file
  */
-import 'vite/dynamic-import-polyfill'
+import '@babel/runtime/helpers/esm/slicedToArray'
 export const msg = '[success]'
