@@ -38,7 +38,7 @@ const htmlTypesRE = /\.(html|vue|svelte)$/
 // use Acorn because it's slow. Luckily this doesn't have to be bullet proof
 // since even missed imports can be caught at runtime, and false positives will
 // simply be ignored.
-const importsRE = /\bimport(?:[\w*{}\n\r\t, ]+from\s*)?\s*("[^"]+"|'[^']+')/gm
+const importsRE = /\bimport(?!\s+type)(?:[\w*{}\n\r\t, ]+from\s*)?\s*("[^"]+"|'[^']+')/gm
 
 export async function scanImports(
   config: ResolvedConfig
@@ -85,7 +85,7 @@ export async function scanImports(
     debug(`Crawling dependencies using entries:\n  ${entries.join('\n  ')}`)
   }
 
-  const tempDir = path.join(config.optimizeCacheDir!, 'temp')
+  const tempDir = path.join(config.cacheDir!, 'temp')
   const deps: Record<string, string> = {}
   const missing: Record<string, string> = {}
   const container = await createPluginContainer(config)
@@ -134,7 +134,8 @@ function globEntries(pattern: string | string[], config: ResolvedConfig) {
 }
 
 const scriptModuleRE = /(<script\b[^>]*type\s*=\s*(?:"module"|'module')[^>]*>)(.*?)<\/script>/gims
-const scriptRE = /(<script\b[^>]*>)(.*?)<\/script>/gims
+export const scriptRE = /(<script\b(\s[^>]*>|>))(.*?)<\/script>/gims
+export const commentRE = /<!--(.|[\r\n])*?-->/
 const srcRE = /\bsrc\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s'">]+))/im
 const langRE = /\blang\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s'">]+))/im
 
@@ -196,14 +197,18 @@ function esbuildScanPlugin(
       build.onLoad(
         { filter: htmlTypesRE, namespace: 'html' },
         async ({ path }) => {
-          const raw = fs.readFileSync(path, 'utf-8')
-          const regex = path.endsWith('.html') ? scriptModuleRE : scriptRE
+          let raw = fs.readFileSync(path, 'utf-8')
+          // Avoid matching the content of the comment
+          raw = raw.replace(commentRE, '')
+          const isHtml = path.endsWith('.html')
+          const regex = isHtml ? scriptModuleRE : scriptRE
           regex.lastIndex = 0
           let js = ''
           let loader: Loader = 'js'
           let match
           while ((match = regex.exec(raw))) {
-            const [, openTag, content] = match
+            const [, openTag, htmlContent, scriptContent] = match
+            const content = isHtml ? htmlContent : scriptContent
             const srcMatch = openTag.match(srcRE)
             const langMatch = openTag.match(langRE)
             const lang =
@@ -310,7 +315,7 @@ function esbuildScanPlugin(
       // css & json
       build.onResolve(
         {
-          filter: /\.(css|less|sass|scss|styl|stylus|postcss|json)$/
+          filter: /\.(css|less|sass|scss|styl|stylus|pcss|postcss|json)$/
         },
         externalUnlessEntry
       )
@@ -417,7 +422,10 @@ async function transformGlob(
   return s.toString()
 }
 
-export function shouldExternalizeDep(resolvedId: string, rawId: string) {
+export function shouldExternalizeDep(
+  resolvedId: string,
+  rawId: string
+): boolean {
   // not a valid file path
   if (!path.isAbsolute(resolvedId)) {
     return true
@@ -430,4 +438,5 @@ export function shouldExternalizeDep(resolvedId: string, rawId: string) {
   if (!JS_TYPES_RE.test(resolvedId) && !htmlTypesRE.test(resolvedId)) {
     return true
   }
+  return false
 }
