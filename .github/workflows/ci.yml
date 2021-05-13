@@ -8,7 +8,7 @@ env:
 on:
   push:
     branches:
-      - main
+      - fix-issue-1925-back
   pull_request:
 
 jobs:
