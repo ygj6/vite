@@ -70,6 +70,12 @@ export interface BuildOptions {
    */
   polyfillDynamicImport?: boolean
   /**
+   * whether to inject `__vitePreload` method.
+   * Note: does not apply to library mode.
+   * @default true
+   */
+  autoPreload?: boolean
+  /**
    * Directory relative from `root` where build output will be placed. If the
    * directory exists, it will be removed before the build.
    * @default 'dist'
@@ -209,6 +215,7 @@ export function resolveBuildOptions(raw?: BuildOptions): ResolvedBuildOptions {
   const resolved: ResolvedBuildOptions = {
     target: 'modules',
     polyfillDynamicImport: false,
+    autoPreload: true,
     outDir: 'dist',
     assetsDir: 'assets',
     assetsInlineLimit: 4096,
