@@ -70,8 +70,7 @@ export interface BuildOptions {
    */
   polyfillDynamicImport?: boolean
   /**
-   * whether to inject `__vitePreload` method.
-   * Note: does not apply to library mode.
+   * whether to inject `__vitePreload` helper method.
    * @default true
    */
   autoPreload?: boolean

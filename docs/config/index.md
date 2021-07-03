@@ -563,9 +563,9 @@ createServer()
 ### build.autoPreload
 
 - **Type:** `boolean`
-- **Default:** `false`
+- **Default:** `true`
 
-  Specify the output directory (relative to [project root](/guide/#index-html-and-project-root)).
+  whether to inject `__vitePreload` helper method.
 
 ### build.outDir
 
