@@ -23,7 +23,11 @@ exports.serve = async function serve(root, isProd) {
     root,
     logLevel: 'silent',
     build: {
-      minify: false,
+      terserOptions: {
+        compress: {
+          passes: 3
+        }
+      },
       autoPreload
     }
   })

@@ -1,9 +1,6 @@
 {
-  "extends": [
-    "config:base",
-    "schedule:weekly",
-    "group:allNonMajor"
-  ],
+  "extends": ["config:base", "schedule:weekly", "group:allNonMajor"],
+  "labels": ["dependencies"],
   "ignorePaths": [
     "packages/playground/**",
     "packages/create-app/template-*/**",

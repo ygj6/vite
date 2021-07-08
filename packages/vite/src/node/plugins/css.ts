@@ -81,7 +81,7 @@ export interface CSSModulesOptions {
 }
 
 const cssLangs = `\\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\\?)`
-const cssLangRE = new RegExp(cssLangs)
+export const cssLangRE = new RegExp(cssLangs)
 const cssModuleRE = new RegExp(`\\.module${cssLangs}`)
 const directRequestRE = /(\?|&)direct\b/
 const commonjsProxyRE = /\?commonjs-proxy/
@@ -942,7 +942,10 @@ function loadPreprocessor(lang: PreprocessLang, root: string): any {
     return loadedPreprocessors[lang]
   }
   try {
-    const resolved = require.resolve(lang, { paths: [root] })
+    // Search for the preprocessor in the root directory first, and fall back
+    // to the default require paths.
+    const fallbackPaths = require.resolve.paths(lang) || []
+    const resolved = require.resolve(lang, { paths: [root, ...fallbackPaths] })
     return (loadedPreprocessors[lang] = require(resolved))
   } catch (e) {
     throw new Error(
